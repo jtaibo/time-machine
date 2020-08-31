@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 #
-#	Relay management module
+#	Nixie management module
 #
 
 import RPi.GPIO as GPIO
@@ -47,7 +47,7 @@ class NixieDisplay:
       bit = ( digit >> x ) & 0x1
       self.push_bit(bit)
 
-  def set_number(self, number):
+  def push_number(self, number):
   #  print( "set_number", number)
     digit1 = number // 10
     digit2 = number % 10
@@ -55,6 +55,15 @@ class NixieDisplay:
   #  print("digit2", digit2)
     self.push_digit(digit2)
     self.push_digit(digit1)
+
+  def set_number(self, number):
+    self.push_number(number)
+    self.pulse(GlobalConfig.nixie_rck)
+
+  def set_numbers(self, n1, n2, n3):
+    self.push_number(n1)
+    self.push_number(n2)
+    self.push_number(n3)
     self.pulse(GlobalConfig.nixie_rck)
 
   def turn_off(self):
@@ -63,6 +72,11 @@ class NixieDisplay:
     self.push_digit(0xf)
     self.pulse(GlobalConfig.nixie_rck)
 
+  def setLEDColor(self, r, g, b):
+    # TO-DO: Control PWM
+    GPIO.output(GlobalConfig.leds_r, r)
+    GPIO.output(GlobalConfig.leds_g, g)
+    GPIO.output(GlobalConfig.leds_b, b)
 
   def testLEDs(self):
     # Test LEDs
@@ -85,5 +99,5 @@ class NixieDisplay:
       GPIO.output(GlobalConfig.leds_b, number & 0x4)
       # Nixie lamps
       self.set_number(number)
-      time.sleep(.1)
+      time.sleep(.01)
       number = ( number + 1 ) % 100

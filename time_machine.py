@@ -10,11 +10,15 @@ import RPi.GPIO as GPIO
 from globalconfig import GlobalConfig
 import relay
 import nixie
+import clock
 
 print("Starting TimeMachine(TM)")
 
+# Construction of global objects
 relays = relay.RelayModule()
 nixies = nixie.NixieDisplay()
+the_clock = clock.Clock(nixies)
+
 
 def test_relays():
   # Test relays
@@ -26,6 +30,8 @@ def test_relays():
 # Cleanup
 def shutdown():
   print("TimeMachine(TM) shutdown!")
+  the_clock.stop()
+  the_clock.join()
   GPIO.cleanup()
 
 try:
@@ -37,10 +43,15 @@ try:
   relays.turnOnDevice("nixie_control")
   time.sleep(.5)
   relays.turnOnDevice("nixie_inverter")
+  time.sleep(.5)
+  relays.turnOnDevice("vumeter_board")
 
   nixies.testLEDs()
   time.sleep(2)
   nixies.testDisplay(100)
+
+  nixies.setLEDColor(0, 1, 0)
+  the_clock.start()
 
   while True:
     time.sleep(.2)
