@@ -39,3 +39,5 @@ class GlobalConfig:
   nixie_data = 16
   nixie_sck = 20
   nixie_rck = 21
+
+  seconds_sound = 0

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<link rel="shortcut icon" href="{{url_for('static',filename='favicon.png')}}">
+ 
+<title>TimeMachine(TM)</title>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>window.jQuery || document.write('<script src="{{ url_for('static',filename='jquery.min.js') }}">\x3C/script>');</script>
+<!--
+<script src="https://code.jquery.com/jquery-1.9.1.min.js" integrity="sha256-wS9gmOZBqsqWxgIVgA8Y9WcQOa7PgSIX+rPA0VL2rbQ=" crossorigin="anonymous"></script>
+-->
+
+<script type=text/javascript>
+  var relay_on_color='#00ff00';
+  var relay_off_color='#ff0000';
+
+  // Debugging only
+  $( document ).ready(function() {
+    console.log( 'ready!' );
+
+    var i;
+    for ( i = 0 ; i < 8 ; i++ ) {
+      if ( {{relays}}[i] == 1 ) {
+        document.getElementById( (i+1).toString() ).style.background=relay_on_color;
+      }
+      else {
+        document.getElementById( (i+1).toString() ).style.background=relay_off_color;
+      }
+    }
+  })
+
+  $(function() {
+    $('a.relay_btn').bind('click', function(event) {
+        console.log( 'CLICK!' );
+	$.getJSON('/_relay', {
+          channel: event.target.id
+	}, function(data) {
+	  relay_status = data.result;
+//	  console.log(data.result);
+	  // Switch button color from result (on/off)
+	  if ( relay_status == "1" ) {
+            document.getElementById(event.target.id).style.background=relay_on_color;
+	  }
+	  else {
+            document.getElementById(event.target.id).style.background=relay_off_color;
+	  }
+	});
+	return false;
+    });
+    $('a.pwrdwn_btn').bind('click', function() {
+        console.log('POWER DOWN!');
+        $.getJSON('/_pwrdwn', {}, function(data) {
+          console.log( data.result );
+          // TO-DO: Notify the shutdown request
+        });
+        return false;
+    });
+    $('a.setcolor_btn').bind('click', function(event) {
+        console.log( 'SET COLOR!' );
+	$.getJSON('/_setColor', {
+          color: document.getElementById("color_picker").value
+	}, function(data) {
+	  console.log("Returned color:", data.result);
+	  // Set color
+          document.getElementById("color_picker").value = data.result;
+	});
+	return false;
+    });
+  });
+</script>
+
+</head>
+<body>
+
+  <header>
+    <p>
+      <img src="{{url_for('static', filename='logop.png')}}" alt="TimeMachine(TM)"/>
+    </p>
+  </header>
+
+  <section class="status">
+    <h1>Status</h1>
+    <p>
+      Temp CPU: {{ cpu_temp }} ºC
+      <br/>
+      Temp GPU: {{ gpu_temp }} ºC
+      <br/>
+      Other: {{ other_temp }} ºC
+      <br/>
+      Uptime: {{ uptime }}
+    </p>
+  </section>
+
+  <section class="relays">
+    <p>
+      <!-- button -->
+      <a href="#" class="relay_btn"><button name="rch1" id="1"/>Ch1<br/>Plasma ball</button></a>
+      <a href="#" class="relay_btn"><button name="rch2" id="2"/>Ch2<br/>Audio amps.</button></a>
+      <a href="#" class="relay_btn"><button name="rch3" id="3"/>Ch3<br/>Nixie drivers</button></a>
+      <a href="#" class="relay_btn"><button name="rch4" id="4"/>Ch4<br/>Unused</button></a>
+      <a href="#" class="relay_btn"><button name="rch5" id="5"/>Ch5<br/>Nixie power</button></a>
+      <a href="#" class="relay_btn"><button name="rch6" id="6"/>Ch6<br/>VU-meters</button></a>
+      <a href="#" class="relay_btn"><button name="rch7" id="7"/>Ch7<br/>Unused</button></a>
+      <a href="#" class="relay_btn"><button name="rch8" id="8"/>Ch8<br/>Unused</button></a>
+    </p>
+  </section>
+
+  <section class="lamps_leds">
+    <h2>Lamps</h2>
+    <p>
+      Nixie lamps color <input type="color" id="color_picker" value="{{lamp_leds_color}}">
+      <a href="#" class="setcolor_btn"><button>Set</button></a>
+    </p>
+  </section>
+
+  <section class="camera">
+    <h2>Camera control</h2>
+    <p>
+      TO-DO
+    </p>
+  </section>
+  
+  <section class="detection">
+    <h2>Detection</h2>
+    <p>
+      PIR status
+      <br/>
+      Bluetooth identification
+    </p>
+  </section>
+
+  <section class="audio">
+    <h2>Audio</h2>
+    <p>
+      Audio stuff
+    </p>
+  </section>
+  
+  <section class="config">
+    <h2>Config</h2>
+    <p>
+      TO-DO
+    </p>
+  </section>
+
+  <section class="power_down">
+    <h2>Power</h2>
+    <p>
+      <a href="#" class="pwrdwn_btn"><button>SYSTEM SHUTDOWN!</button></a>
+    </p>
+  </section>
+
+  <footer>
+    <p>
+      <hr/>
+      {{ time }}
+      <br/>
+      {{ uptime_line }}
+    </p>
+  </footer>
+
+</body>
+</html>

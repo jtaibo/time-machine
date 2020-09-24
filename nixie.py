@@ -78,6 +78,9 @@ class NixieDisplay:
     GPIO.output(GlobalConfig.leds_g, g)
     GPIO.output(GlobalConfig.leds_b, b)
 
+  def getLEDColor(self):
+    return GPIO.input(GlobalConfig.leds_r), GPIO.input(GlobalConfig.leds_g), GPIO.input(GlobalConfig.leds_b)
+
   def testLEDs(self):
     # Test LEDs
     GPIO.output(GlobalConfig.leds_r, 1)
