@@ -10,6 +10,7 @@
 
 from flask import Flask, render_template, jsonify, request
 import monitor
+import audio
 import datetime
 import threading
 import time
@@ -54,6 +55,7 @@ def index():
    now = datetime.datetime.now()
    timeString = now.strftime("%Y-%m-%d %H:%M")
    leds_color = rgb_to_hex( tuple([255*x for x in nixies.getLEDColor() ]) )
+   volume = audio.getVolume()
    templateData = {
       'title' : 'Time Machine(TM)',
       'time': timeString,
@@ -67,7 +69,8 @@ def index():
       'ip_address': monitor.get_ipaddress(),
       'uptime': monitor.get_uptime(),
       'relays': [ relays.getState(0), relays.getState(1), relays.getState(2), relays.getState(3), relays.getState(4), relays.getState(5), relays.getState(6), relays.getState(7) ],
-      'lamp_leds_color': leds_color
+      'lamp_leds_color': leds_color,
+      'volume': volume
       # TO-DO: LEDs color, relays status
       }
    return render_template('index.html', **templateData)
@@ -100,6 +103,23 @@ def setColor():
   except Exception as e:
     return str(e)
 
+@app.route("/_setVolume")
+def setVolume():
+  try:
+    volume = int( request.args.get('volume') )
+    audio.setVolume( volume )
+    return(jsonify(result=volume))
+  except Exception as e:
+    return str(e)
+
+@app.route("/_gladosQuote")
+def gladosQuote():
+  print("GLaDOS quote")
+  try:
+    call("./glados_quotes.sh", shell=True)
+    return(jsonify(result="OK"))
+  except Exception as e:
+    return str(e)
 
 @app.route("/_pwrdwn")
 def pwrdwn():

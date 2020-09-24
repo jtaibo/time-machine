@@ -29,6 +29,7 @@
         document.getElementById( (i+1).toString() ).style.background=relay_off_color;
       }
     }
+
   })
 
   $(function() {
@@ -53,7 +54,6 @@
         console.log('POWER DOWN!');
         $.getJSON('/_pwrdwn', {}, function(data) {
           console.log( data.result );
-          // TO-DO: Notify the shutdown request
         });
         return false;
     });
@@ -67,6 +67,24 @@
           document.getElementById("color_picker").value = data.result;
 	});
 	return false;
+    });
+    $('a.glados_btn').bind('click', function() {
+        console.log('GLaDOS quote!');
+        $.getJSON('/_gladosQuote', {}, function(data) {
+          console.log( data.result );
+        });
+        return false;
+    });
+    $('input#volume_slider').bind('input', function(event) {
+      console.log("SLIDER_INPUT");
+      $.getJSON('/_setVolume', {
+          volume: event.target.value
+        }, function(data) {
+          console.log("VOLUME: ", data.result);
+          volume_label = document.getElementById("volume_label");
+          volume_label.innerHTML = data.result;
+        });
+        return false;
     });
   });
 </script>
@@ -134,7 +152,11 @@
   <section class="audio">
     <h2>Audio</h2>
     <p>
-      Audio stuff
+      <span id="volume_label">{{volume}}</span>
+      <input type="range" min="0" max="100" value="{{volume}}" class="slider" id="volume_slider">
+    </p>
+    <p>
+      <a href="#" class="glados_btn"><button>GLaDOS quote</button></a>
     </p>
   </section>
   
