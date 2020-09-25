@@ -8,6 +8,7 @@
 #
 #
 
+from globalconfig import GlobalConfig
 from flask import Flask, render_template, jsonify, request
 import monitor
 import audio
@@ -70,8 +71,8 @@ def index():
       'uptime': monitor.get_uptime(),
       'relays': [ relays.getState(0), relays.getState(1), relays.getState(2), relays.getState(3), relays.getState(4), relays.getState(5), relays.getState(6), relays.getState(7) ],
       'lamp_leds_color': leds_color,
-      'volume': volume
-      # TO-DO: LEDs color, relays status
+      'volume': volume,
+      'seconds_sound': GlobalConfig.seconds_sound
       }
    return render_template('index.html', **templateData)
 
@@ -118,6 +119,16 @@ def gladosQuote():
   try:
     call("./glados_quotes.sh", shell=True)
     return(jsonify(result="OK"))
+  except Exception as e:
+    return str(e)
+
+@app.route("/_setConfig")
+def setConfig():
+  print("Set config")
+  try:
+    seconds_sound=request.args.get('seconds_sound')
+    GlobalConfig.seconds_sound= int(seconds_sound)
+    return(jsonify(seconds_sound=GlobalConfig.seconds_sound))
   except Exception as e:
     return str(e)
 

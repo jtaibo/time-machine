@@ -29,6 +29,9 @@ class Clock(threading.Thread):
           self.ticToc()
         elif GlobalConfig.seconds_sound == 2:
           self.ticTic()
+        # Pause til next second
+        now = time.time()
+        time.sleep( 1 - ( now - int(now) ))
 
     def setTime(self):
       now = datetime.datetime.now()
@@ -36,13 +39,11 @@ class Clock(threading.Thread):
 
     def ticToc(self):
         self.relays.toggle(7)
-        time.sleep(1)
 
     def ticTic(self):
         self.relays.on(7)
         time.sleep(.025)
         self.relays.off(7)
-        time.sleep(.975)
 
     def stop(self):
       self.done = True

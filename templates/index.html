@@ -29,7 +29,8 @@
         document.getElementById( (i+1).toString() ).style.background=relay_off_color;
       }
     }
-
+    document.getElementById("secsnd").value = {{seconds_sound}};
+    
   })
 
   $(function() {
@@ -57,7 +58,8 @@
         });
         return false;
     });
-    $('a.setcolor_btn').bind('click', function(event) {
+//    $('a.setcolor_btn').bind('click', function(event) {
+    $('input#color_picker').bind('change', function(event) {
         console.log( 'SET COLOR!' );
 	$.getJSON('/_setColor', {
           color: document.getElementById("color_picker").value
@@ -85,6 +87,14 @@
           volume_label.innerHTML = data.result;
         });
         return false;
+    });
+    $('select#secsnd').bind('change', function(event) {
+      console.log("SECONDS_SOUND");
+      $.getJSON('/_setConfig', {
+        seconds_sound: event.target.value
+      }, function(data) {
+        console.log("SECONDS SOUND: ", data.seconds_sound);
+      });
     });
   });
 </script>
@@ -163,7 +173,12 @@
   <section class="config">
     <h2>Config</h2>
     <p>
-      TO-DO
+      <label for="secsnd">Seconds sound:</label>
+      <select name="secsnd" id="secsnd">
+        <option value="0">Silence</option>
+        <option value="1">Tic-tac</option>
+        <option value="2">Tic-tic</option>
+      </select>
     </p>
   </section>
 
