@@ -8,6 +8,7 @@
 #
 #
 
+import camera
 from globalconfig import GlobalConfig
 from flask import Flask, render_template, jsonify, request
 import monitor
@@ -16,6 +17,7 @@ import datetime
 import threading
 import time
 from subprocess import call
+
 
 app = Flask(__name__)
 
@@ -38,8 +40,12 @@ def round_component(v):
 def rgb_round_up(rgb):
     return ( round_component(rgb[0]), round_component(rgb[1]), round_component(rgb[2]) )
 
-
 def flaskThread():
+
+    global cam
+    cam = camera.CameraServer()
+    cam.start()
+
 #    app.run(host='192.168.0.46', port=80, debug=True)
     app.run(host='192.168.0.46', port=8080, debug=False)
 
@@ -55,7 +61,7 @@ def start(rels, nix):
 def index():
    now = datetime.datetime.now()
    timeString = now.strftime("%Y-%m-%d %H:%M")
-   leds_color = rgb_to_hex( tuple([255*x for x in nixies.getLEDColor() ]) )
+   leds_color = rgb_to_hex( tuple([int(255*x) for x in nixies.getLEDColor() ]) )
    volume = audio.getVolume()
    templateData = {
       'title' : 'Time Machine(TM)',
@@ -93,12 +99,9 @@ def setColor():
   try:
     hex_col = request.args.get('color')
     col = hex_to_rgb(hex_col)
-    rnd_col = rgb_round_up(col)
 
     # Set LEDs color
-    print("Setting LEDs to ", rnd_col[0]/255, rnd_col[1]/255, rnd_col[2]/255)
-    nixies.setLEDColor( int(rnd_col[0]/255), int(rnd_col[1]/255), int(rnd_col[2]/255) )
-
+    nixies.setLEDColor( col[0]/255., col[1]/255., col[2]/255. )
     result_col = rgb_to_hex(rnd_col)
     return(jsonify(result=result_col))
   except Exception as e:
@@ -138,8 +141,38 @@ def pwrdwn():
   call("sudo poweroff", shell=True)
   return(jsonify(result="Power down requested"))
 
+@app.route("/_reboot")
+def reboot():
+  print("REBOOT Requested!")
+  call("sudo reboot", shell=True)
+  return(jsonify(result="Reboot requested"))
+
+@app.route("/_colorAnimation")
+def colorAnimation():
+  print("Color animation")
+  nixies.toggleColorAnimation()
+  return(jsonify(result="Color animation toggled"))
+
+@app.route("/_cameraStart")
+def cameraStart():
+  print("Camera start")
+  global cam
+  cam.start_streaming()
+  return(jsonify(result="Camera streaming started"))
+
+@app.route("/_cameraStop")
+def cameraStop():
+  print("Camera stop")
+  global cam
+  cam.stop_streaming()
+  return(jsonify(result="Camera streaming stopped"))
+
 
 if __name__ == "__main__":
 
+    cam = camera.CameraServer()
+    cam.start()
+
 #    app.run(host='192.168.0.46', port=80, debug=True)
-    app.run(host='192.168.0.46', port=8080, debug=True)
+#    app.run(host='192.168.0.46', port=8080, debug=True)
+    app.run(host='192.168.0.46', port=8080, debug=False)

@@ -51,6 +51,31 @@
 	});
 	return false;
     });
+/*
+    $('a.default_btn').bind('click', function() {
+        console.log('POWER DOWN!');
+        $.getJSON('/_setState', {
+          mode: event.
+        }, function(data) {
+          console.log( data.result );
+        });
+        return false;
+    });
+*/
+    $('a.cam_start_btn').bind('click', function() {
+        console.log('Camera start');
+        $.getJSON('/_cameraStart', {}, function(data) {
+          console.log( data.result );
+        });
+        return false;
+    });
+    $('a.cam_stop_btn').bind('click', function() {
+        console.log('Camera stop');
+        $.getJSON('/_cameraStop', {}, function(data) {
+          console.log( data.result );
+        });
+        return false;
+    });
     $('a.pwrdwn_btn').bind('click', function() {
         console.log('POWER DOWN!');
         $.getJSON('/_pwrdwn', {}, function(data) {
@@ -58,7 +83,13 @@
         });
         return false;
     });
-//    $('a.setcolor_btn').bind('click', function(event) {
+    $('a.reboot_btn').bind('click', function() {
+        console.log('REBOOT!');
+        $.getJSON('/_reboot', {}, function(data) {
+          console.log( data.result );
+        });
+        return false;
+    });
     $('input#color_picker').bind('change', function(event) {
         console.log( 'SET COLOR!' );
 	$.getJSON('/_setColor', {
@@ -69,6 +100,13 @@
           document.getElementById("color_picker").value = data.result;
 	});
 	return false;
+    });
+    $('a.color_anim_btn').bind('click', function() {
+        console.log('Color animation');
+        $.getJSON('/_colorAnimation', {}, function(data) {
+          console.log( data.result );
+        });
+        return false;
     });
     $('a.glados_btn').bind('click', function() {
         console.log('GLaDOS quote!');
@@ -133,13 +171,18 @@
       <a href="#" class="relay_btn"><button name="rch7" id="7"/>Ch7<br/>Unused</button></a>
       <a href="#" class="relay_btn"><button name="rch8" id="8"/>Ch8<br/>Unused</button></a>
     </p>
+    <p>
+      <a href="#" class="default_btn"><button name="state_default" id="state_default"/>Default</button></a>      
+      <a href="#" class="off_btn"><button name="state_off" id="state_off"/>Off</button></a>      
+    </p>
   </section>
 
   <section class="lamps_leds">
     <h2>Lamps</h2>
     <p>
       Nixie lamps color <input type="color" id="color_picker" value="{{lamp_leds_color}}">
-      <a href="#" class="setcolor_btn"><button>Set</button></a>
+      <br/>
+      <a href="#" class="color_anim_btn"><button name="color_anim" id="color_anim">Animate</button></a>
     </p>
   </section>
 
@@ -147,6 +190,13 @@
     <h2>Camera control</h2>
     <p>
       TO-DO
+    </p>
+    <p>
+      <center><img src="http://nixie:8000/stream.mjpg" width="640" height="480"></center>
+    </p>
+    <p>
+      <a href="#" class="cam_start_btn"><button name="cam_start" id="cam_start"/>Start</button></a>      
+      <a href="#" class="cam_stop_btn"><button name="cam_stop" id="cam_stop"/>Stop</button></a>      
     </p>
   </section>
   
@@ -186,6 +236,7 @@
     <h2>Power</h2>
     <p>
       <a href="#" class="pwrdwn_btn"><button>SYSTEM SHUTDOWN!</button></a>
+      <a href="#" class="reboot_btn"><button>REBOOT</button></a>
     </p>
   </section>
 

@@ -63,6 +63,7 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
             self.end_headers()
             try:
                 while True:
+                    global output
                     with output.condition:
                         output.condition.wait()
                         frame = output.frame
@@ -89,24 +90,42 @@ class CameraServer(threading.Thread):
 
   def __init__(self):
     threading.Thread.__init__(self)
+    global output
+    output = StreamingOutput()
+    self.on = False
+
+  def start_streaming(self):
+    if not self.on:
+      global output
+      self.camera.start_recording(output, format='mjpeg')
+      self.on = True      
+
+  def stop_streaming(self):
+    if self.on:
+      self.camera.stop_recording()
+      self.on = False
 
   def run(self):
-    with picamera.PiCamera(resolution='640x480', framerate=24) as camera:
-      output = StreamingOutput()
+  
+    global output
+
+    with picamera.PiCamera(resolution='640x480', framerate=24) as self.camera:
       #Uncomment the next line to change your Pi's Camera rotation (in degrees)
       #camera.rotation = 90
-      camera.start_recording(output, format='mjpeg')
+      #self.camera.start_recording(output, format='mjpeg')
       try:
           address = ('', 8000)
           server = StreamingServer(address, StreamingHandler)
           server.serve_forever()
       finally:
-          camera.stop_recording()
+          self.stop_streaming()
+          #self.camera.stop_recording()
 
 
 if __name__ == "__main__":
 
   with picamera.PiCamera(resolution='640x480', framerate=24) as camera:
+    global output
     output = StreamingOutput()
     #Uncomment the next line to change your Pi's Camera rotation (in degrees)
     #camera.rotation = 90

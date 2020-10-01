@@ -7,6 +7,7 @@
 import RPi.GPIO as GPIO
 from globalconfig import GlobalConfig
 import time
+import threading
 
 PULSE_DURATION = 0.01
 
@@ -27,7 +28,25 @@ class NixieDisplay:
     GPIO.setup(GlobalConfig.leds_b, GPIO.OUT)
     GPIO.output(GlobalConfig.leds_r, 0)
     GPIO.output(GlobalConfig.leds_g, 0)
-    GPIO.output(GlobalConfig.leds_b, 0)
+    GPIO.output(GlobalConfig.leds_b, 0)    
+    freq = 50
+    self.r_led = GPIO.PWM(GlobalConfig.leds_r, freq)
+    self.g_led = GPIO.PWM(GlobalConfig.leds_g, freq)
+    self.b_led = GPIO.PWM(GlobalConfig.leds_b, freq)
+    self.r = 0.
+    self.g = 0.
+    self.b = 0.
+    self.r_led.start(self.r)
+    self.g_led.start(self.g)
+    self.b_led.start(self.b)
+    self.LEDAnim = False
+    self.colorAnimStepPause = .1	# Pause time
+
+  def __del__(self):
+    self.stopColorAnimation()
+    self.r_led.stop()
+    self.g_led.stop()
+    self.b_led.stop()
 
   def pulse(self, pin):
   #  GPIO.output(pin, 0)
@@ -74,12 +93,22 @@ class NixieDisplay:
 
   def setLEDColor(self, r, g, b):
     # TO-DO: Control PWM
-    GPIO.output(GlobalConfig.leds_r, r)
-    GPIO.output(GlobalConfig.leds_g, g)
-    GPIO.output(GlobalConfig.leds_b, b)
+#    GPIO.output(GlobalConfig.leds_r, r)
+#    GPIO.output(GlobalConfig.leds_g, g)
+#    GPIO.output(GlobalConfig.leds_b, b)
+    self.stopColorAnimation()
+#    print("Called setLEDColor with ", r, g, b)
+    self.r = r*100.
+    self.g = g*100.
+    self.b = b*100.
+#    print("Setting RGB to ", self.r, self.g, self.b)
+    self.r_led.ChangeDutyCycle(self.r)
+    self.g_led.ChangeDutyCycle(self.g)
+    self.b_led.ChangeDutyCycle(self.b)
 
   def getLEDColor(self):
-    return GPIO.input(GlobalConfig.leds_r), GPIO.input(GlobalConfig.leds_g), GPIO.input(GlobalConfig.leds_b)
+#    return GPIO.input(GlobalConfig.leds_r), GPIO.input(GlobalConfig.leds_g), GPIO.input(GlobalConfig.leds_b)
+    return self.r/100., self.g/100., self.b/100.
 
   def testLEDs(self):
     # Test LEDs
@@ -104,3 +133,71 @@ class NixieDisplay:
       self.set_number(number)
       time.sleep(.01)
       number = ( number + 1 ) % 100
+
+  def LEDColorAnimation(self):
+    self.r_led.ChangeDutyCycle(0)
+    self.g_led.ChangeDutyCycle(0)
+    self.b_led.ChangeDutyCycle(0)
+    for r in range(0, 101, 1):
+      self.r = r
+      self.r_led.ChangeDutyCycle(r)
+      time.sleep(self.colorAnimStepPause)
+      if not self.LEDAnim:
+        return
+    while True:
+      for b in range(0, 101, 1):
+        self.b = b
+        self.b_led.ChangeDutyCycle(b)
+        time.sleep(self.colorAnimStepPause)
+        if not self.LEDAnim:
+          return
+      for r in range(100, -1, -1):
+        self.r = r
+        self.r_led.ChangeDutyCycle(r)
+        time.sleep(self.colorAnimStepPause)
+        if not self.LEDAnim:
+          return
+      for g in range(0, 101, 1):
+        self.g = g
+        self.g_led.ChangeDutyCycle(g)
+        time.sleep(self.colorAnimStepPause)
+        if not self.LEDAnim:
+          return
+      for b in range(100, -1, -1):
+        self.b = b
+        self.b_led.ChangeDutyCycle(b)
+        time.sleep(self.colorAnimStepPause)
+        if not self.LEDAnim:
+          return
+      for r in range(0, 101, 1):
+        self.r = r
+        self.r_led.ChangeDutyCycle(r)
+        time.sleep(self.colorAnimStepPause)
+        if not self.LEDAnim:
+          return
+      for g in range(100, -1, -1):
+        self.g = g
+        self.g_led.ChangeDutyCycle(g)
+        time.sleep(self.colorAnimStepPause)
+        if not self.LEDAnim:
+          return
+
+  def startColorAnimation(self):
+    if self.LEDAnim:
+      return
+    self.LEDAnimThread = threading.Thread(target=self.LEDColorAnimation)
+    self.LEDAnim = True
+    self.LEDAnimThread.start()
+
+  def stopColorAnimation(self):
+    if not self.LEDAnim:
+      return
+    self.LEDAnim = False
+    self.LEDAnimThread.join()
+
+  def toggleColorAnimation(self):
+    if self.LEDAnim:
+      self.stopColorAnimation()
+    else:
+      self.startColorAnimation()
+
