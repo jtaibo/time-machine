@@ -5,6 +5,7 @@
 #
 
 import RPi.GPIO as GPIO
+import time
 from globalconfig import GlobalConfig
 
 class RelayDevice:
@@ -62,3 +63,22 @@ class RelayModule:
       return self.getState( self.devices[name].channel )
     else:
       return None
+
+  # Configuration
+
+  def setDefaultConfiguration(self):
+    # TO-DO: read from stored configuration
+    dramatic_pause = .5
+    self.turnOnDevice("nixie_control")
+    time.sleep(dramatic_pause)
+    self.turnOnDevice("plasma_ball")
+    time.sleep(dramatic_pause)
+    self.turnOnDevice("vumeter_board")
+    time.sleep(dramatic_pause)
+    self.turnOnDevice("audio_amp")
+    time.sleep(dramatic_pause)
+    self.turnOnDevice("nixie_inverter")
+
+  def turnOffAllDevices(self):
+    for dev in self.devices:
+      self.turnOffDevice(dev)
